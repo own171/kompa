@@ -1,6 +1,6 @@
 {
   "name": "kompa-server",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Global CLI for instant Kompa collaboration server deployment",
   "type": "module",
   "bin": {

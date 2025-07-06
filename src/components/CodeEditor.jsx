@@ -30,14 +30,17 @@ export function CodeEditor({
 
   // Create debounced cursor update function
   const debouncedFn = useRef(null)
-  
-  const sendCursorUpdate = useCallback((position, selection) => {
-    sendOperation({
-      type: 'cursor-move',
-      position,
-      selection,
-    })
-  }, [sendOperation])
+
+  const sendCursorUpdate = useCallback(
+    (position, selection) => {
+      sendOperation({
+        type: 'cursor-move',
+        position,
+        selection,
+      })
+    },
+    [sendOperation]
+  )
 
   useEffect(() => {
     debouncedFn.current = debounce(sendCursorUpdate, CURSOR_UPDATE_DEBOUNCE)
@@ -69,7 +72,7 @@ export function CodeEditor({
       }
 
       handleLocalChanges(event.changes)
-      
+
       // Send cursor position after text changes (for typing) - use setTimeout to avoid interference
       setTimeout(() => {
         const currentPosition = editor.getPosition()
@@ -167,7 +170,6 @@ export function CodeEditor({
       syncManager.off('documentChange', handleRemoteChange)
     }
   }, [syncManager])
-
 
   // Convert Y.js delta to Monaco operations
   const convertDeltaToMonacoOperations = delta => {

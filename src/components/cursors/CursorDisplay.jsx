@@ -1,30 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { CursorLine } from './CursorLine'
 import { CursorLabel } from './CursorLabel'
 import { SelectionHighlight } from './SelectionHighlight'
 
 export function CursorDisplay({ cursor, editor }) {
-  if (!cursor || !cursor.id || !editor) return null
-
   const [activityState, setActivityState] = useState('active')
   const lastActivity = useRef(Date.now())
   const lastPosition = useRef(null)
   const activityTimer = useRef(null)
 
   // Calculate cursor position from Monaco editor
-  const rawPosition = cursor.position
-    ? editor.getScrolledVisiblePosition(cursor.position)
-    : null
-
-  // Validate position has valid numeric coordinates  
-  const position =
-    rawPosition &&
-    typeof rawPosition.left === 'number' &&
-    typeof rawPosition.top === 'number' &&
-    !isNaN(rawPosition.left) &&
-    !isNaN(rawPosition.top)
-      ? { x: rawPosition.left, y: rawPosition.top }
+  const position = useMemo(() => {
+    if (!cursor || !cursor.id || !editor) return null
+    
+    const rawPosition = cursor.position
+      ? editor.getScrolledVisiblePosition(cursor.position)
       : null
+
+    // Validate position has valid numeric coordinates  
+    return rawPosition &&
+      typeof rawPosition.left === 'number' &&
+      typeof rawPosition.top === 'number' &&
+      !isNaN(rawPosition.left) &&
+      !isNaN(rawPosition.top)
+        ? { x: rawPosition.left, y: rawPosition.top }
+        : null
+  }, [cursor, editor])
 
   // Track cursor activity and state changes
   useEffect(() => {
@@ -76,7 +77,7 @@ export function CursorDisplay({ cursor, editor }) {
     }
   }, [position, cursor.timestamp])
 
-  if (!position) return null
+  if (!cursor || !cursor.id || !editor || !position) return null
 
   const hasValidSelection =
     cursor.selection &&

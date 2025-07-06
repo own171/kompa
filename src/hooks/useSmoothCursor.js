@@ -9,27 +9,29 @@ export function useSmoothCursor(targetPosition, isActive = true) {
   const startPosition = useRef(targetPosition)
   const startTime = useRef(null)
   const lastVelocity = useRef({ x: 0, y: 0 })
+  const currentPositionRef = useRef(targetPosition)
 
   useEffect(() => {
     if (!targetPosition || !isActive) {
       setCurrentPosition(targetPosition)
+      currentPositionRef.current = targetPosition
       return
     }
 
     // If position hasn't changed, don't animate
     if (
-      currentPosition &&
-      targetPosition.x === currentPosition.x &&
-      targetPosition.y === currentPosition.y
+      currentPositionRef.current &&
+      targetPosition.x === currentPositionRef.current.x &&
+      targetPosition.y === currentPositionRef.current.y
     ) {
       return
     }
 
     // Calculate distance and velocity-based duration
-    const distance = currentPosition
+    const distance = currentPositionRef.current
       ? Math.sqrt(
-          Math.pow(targetPosition.x - currentPosition.x, 2) +
-          Math.pow(targetPosition.y - currentPosition.y, 2)
+          Math.pow(targetPosition.x - currentPositionRef.current.x, 2) +
+            Math.pow(targetPosition.y - currentPositionRef.current.y, 2)
         )
       : 0
 
@@ -39,27 +41,27 @@ export function useSmoothCursor(targetPosition, isActive = true) {
     const duration = Math.min(baseDuration + distance * 0.5, maxDuration)
 
     // Store animation start values
-    startPosition.current = currentPosition || targetPosition
+    startPosition.current = currentPositionRef.current || targetPosition
     startTime.current = Date.now()
 
     // Calculate velocity for momentum effects
-    if (currentPosition) {
+    if (currentPositionRef.current) {
       const timeDelta = duration / 1000 // Convert to seconds
       lastVelocity.current = {
-        x: (targetPosition.x - currentPosition.x) / timeDelta,
-        y: (targetPosition.y - currentPosition.y) / timeDelta,
+        x: (targetPosition.x - currentPositionRef.current.x) / timeDelta,
+        y: (targetPosition.y - currentPositionRef.current.y) / timeDelta,
       }
     }
 
     // Advanced easing function with slight overshoot
-    const easeOutBack = (t) => {
+    const easeOutBack = t => {
       const c1 = 1.70158
       const c3 = c1 + 1
       return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
     }
 
     // Alternative: Smooth ease-out for subtle movement
-    const easeOut = (t) => 1 - Math.pow(1 - t, 3)
+    const easeOut = t => 1 - Math.pow(1 - t, 3)
 
     // Use subtle easing for small movements, overshoot for large movements
     const easingFunction = distance > 50 ? easeOutBack : easeOut
@@ -70,19 +72,23 @@ export function useSmoothCursor(targetPosition, isActive = true) {
       const easedProgress = easingFunction(progress)
 
       const newPosition = {
-        x: startPosition.current.x + 
-           (targetPosition.x - startPosition.current.x) * easedProgress,
-        y: startPosition.current.y + 
-           (targetPosition.y - startPosition.current.y) * easedProgress,
+        x:
+          startPosition.current.x +
+          (targetPosition.x - startPosition.current.x) * easedProgress,
+        y:
+          startPosition.current.y +
+          (targetPosition.y - startPosition.current.y) * easedProgress,
       }
 
       setCurrentPosition(newPosition)
+      currentPositionRef.current = newPosition
 
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(animate)
       } else {
         // Ensure we end exactly at target position
         setCurrentPosition(targetPosition)
+        currentPositionRef.current = targetPosition
       }
     }
 

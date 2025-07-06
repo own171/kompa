@@ -6,8 +6,10 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 export default [
   js.configs.recommended,
   {
+    ignores: ['dist/**', 'build/**', 'node_modules/**', '**/dist/**', '**/build/**', 'kompa-cli/static/**', 'packages/**/dist/**']
+  },
+  {
     files: ['**/*.{js,jsx}'],
-    ignores: ['dist/**', 'build/**', 'node_modules/**', '**/dist/**', '**/build/**', 'kompa-cli/static/**', 'packages/**/dist/**'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
@@ -26,7 +28,24 @@ export default [
         Blob: 'readonly',
         URL: 'readonly',
         navigator: 'readonly',
-        sessionStorage: 'readonly'
+        sessionStorage: 'readonly',
+        localStorage: 'readonly',
+        fetch: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        performance: 'readonly',
+        setImmediate: 'readonly',
+        MessageChannel: 'readonly',
+        MSApp: 'readonly',
+        __REACT_DEVTOOLS_GLOBAL_HOOK__: 'readonly',
+        reportError: 'readonly',
+        queueMicrotask: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
+        crypto: 'readonly',
+        location: 'readonly',
+        DOMParser: 'readonly',
+        MutationObserver: 'readonly'
       },
       parserOptions: {
         ecmaVersion: 'latest',
@@ -61,6 +80,42 @@ export default [
       react: {
         version: 'detect'
       }
+    }
+  },
+  {
+    files: ['kompa-cli/**/*.js'],
+    ignores: ['kompa-cli/static/**'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        global: 'readonly',
+        globalThis: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly'
+      },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module'
+      }
+    },
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-console': 'off',
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'object-shorthand': 'error',
+      'prefer-arrow-callback': 'error'
     }
   }
 ]

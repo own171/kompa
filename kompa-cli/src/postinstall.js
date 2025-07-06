@@ -4,7 +4,6 @@
  * Post-install welcome message
  */
 
-/* eslint-disable no-console */
 console.log(`
 🐙 Welcome to Kompa!
 
