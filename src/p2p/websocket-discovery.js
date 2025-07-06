@@ -235,7 +235,7 @@ export class WebSocketDiscovery extends EventEmitter {
   broadcast(message) {
     let successCount = 0
 
-    for (const [_peerId, peer] of this.peers) {
+    for (const [, peer] of this.peers) {
       if (peer.isConnected()) {
         if (peer.send(message)) {
           successCount++
@@ -264,7 +264,7 @@ export class WebSocketDiscovery extends EventEmitter {
     })
 
     // Clean up all connections
-    for (const [_peerId, peer] of this.peers) {
+    for (const [, peer] of this.peers) {
       peer.destroy()
     }
     this.peers.clear()
