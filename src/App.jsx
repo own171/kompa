@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CodeEditor } from './components/CodeEditor'
 import { RoomJoin } from './components/RoomJoin'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -9,6 +9,22 @@ function App() {
   const [isInRoom, setIsInRoom] = useState(false)
   const [userName, setUserName] = useState('')
   const [serverUrl, setServerUrl] = useState('ws://localhost:8080')
+
+  // Fetch server configuration on app startup
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch('/api/config')
+        if (response.ok) {
+          const config = await response.json()
+          setServerUrl(config.serverUrl)
+        }
+      } catch (err) {
+        console.warn('Failed to fetch server config, using default:', err)
+      }
+    }
+    fetchConfig()
+  }, [])
 
   const handleJoinRoom = (code, options = {}) => {
     setRoomCode(code)

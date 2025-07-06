@@ -163,7 +163,7 @@ async function startKompaServer(options) {
   if (web) {
     const staticPath = dev 
       ? path.join(process.cwd(), 'dist') 
-      : path.join(__dirname, '../static/dist')
+      : path.join(__dirname, '../static')
       
     webServer = new StaticServer({
       port: parseInt(webPort),

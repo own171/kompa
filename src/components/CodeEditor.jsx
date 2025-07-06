@@ -17,21 +17,6 @@ export function CodeEditor({
   const [isUpdating, setIsUpdating] = useState(false)
   const lastRemoteUpdate = useRef(0)
 
-  // Create debounced cursor update function
-  const debouncedCursorUpdate = useCallback(
-    (position, selection) => {
-      const debouncedFn = debounce(() => {
-        sendOperation({
-          type: 'cursor-move',
-          position,
-          selection,
-        })
-      }, CURSOR_UPDATE_DEBOUNCE)
-      debouncedFn()
-    },
-    [sendOperation]
-  )
-
   const {
     peers,
     connectionState,
@@ -42,6 +27,32 @@ export function CodeEditor({
     getText,
     syncManager,
   } = useKompaRoom(roomCode, { userName, serverUrl })
+
+  // Create debounced cursor update function
+  const debouncedFn = useRef(null)
+  
+  const sendCursorUpdate = useCallback((position, selection) => {
+    sendOperation({
+      type: 'cursor-move',
+      position,
+      selection,
+    })
+  }, [sendOperation])
+
+  useEffect(() => {
+    debouncedFn.current = debounce(sendCursorUpdate, CURSOR_UPDATE_DEBOUNCE)
+    return () => {
+      if (debouncedFn.current) {
+        debouncedFn.current.cancel()
+      }
+    }
+  }, [sendCursorUpdate])
+
+  const debouncedCursorUpdate = useCallback((position, selection) => {
+    if (debouncedFn.current) {
+      debouncedFn.current(position, selection)
+    }
+  }, [])
 
   // Handle editor mounting
   const handleEditorDidMount = (editor, _monaco) => {
@@ -58,6 +69,15 @@ export function CodeEditor({
       }
 
       handleLocalChanges(event.changes)
+      
+      // Send cursor position after text changes (for typing) - use setTimeout to avoid interference
+      setTimeout(() => {
+        const currentPosition = editor.getPosition()
+        const currentSelection = editor.getSelection()
+        if (currentPosition && debouncedCursorUpdate) {
+          debouncedCursorUpdate(currentPosition, currentSelection)
+        }
+      }, 0)
     })
 
     // Set up cursor position listener with debouncing
@@ -148,12 +168,6 @@ export function CodeEditor({
     }
   }, [syncManager])
 
-  // Cleanup debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debouncedCursorUpdate.cancel()
-    }
-  }, [debouncedCursorUpdate])
 
   // Convert Y.js delta to Monaco operations
   const convertDeltaToMonacoOperations = delta => {
