@@ -12,19 +12,19 @@ export function CursorDisplay({ cursor, editor }) {
   // Calculate cursor position from Monaco editor
   const position = useMemo(() => {
     if (!cursor || !cursor.id || !editor) return null
-    
+
     const rawPosition = cursor.position
       ? editor.getScrolledVisiblePosition(cursor.position)
       : null
 
-    // Validate position has valid numeric coordinates  
+    // Validate position has valid numeric coordinates
     return rawPosition &&
       typeof rawPosition.left === 'number' &&
       typeof rawPosition.top === 'number' &&
       !isNaN(rawPosition.left) &&
       !isNaN(rawPosition.top)
-        ? { x: rawPosition.left, y: rawPosition.top }
-        : null
+      ? { x: rawPosition.left, y: rawPosition.top }
+      : null
   }, [cursor, editor])
 
   // Track cursor activity and state changes
@@ -32,7 +32,7 @@ export function CursorDisplay({ cursor, editor }) {
     if (!position) return
 
     const now = Date.now()
-    const hasPositionChanged = 
+    const hasPositionChanged =
       !lastPosition.current ||
       lastPosition.current.x !== position.x ||
       lastPosition.current.y !== position.y
@@ -41,10 +41,10 @@ export function CursorDisplay({ cursor, editor }) {
       // Cursor moved - mark as active/typing
       lastActivity.current = now
       lastPosition.current = position
-      
+
       // Determine if user is typing (recent activity)
-      const isTyping = cursor.timestamp && (now - cursor.timestamp < 1000)
-      
+      const isTyping = cursor.timestamp && now - cursor.timestamp < 1000
+
       if (isTyping) {
         setActivityState('typing')
       } else {
@@ -88,14 +88,18 @@ export function CursorDisplay({ cursor, editor }) {
   return (
     <div key={cursor.id} className="cursor-container">
       {/* Cursor line */}
-      <CursorLine 
-        cursor={cursor} 
-        position={position} 
+      <CursorLine
+        cursor={cursor}
+        position={position}
         activityState={activityState}
       />
 
       {/* Cursor label */}
-      <CursorLabel cursor={cursor} position={position} activityState={activityState} />
+      <CursorLabel
+        cursor={cursor}
+        position={position}
+        activityState={activityState}
+      />
 
       {/* Selection highlight - only if selection is valid */}
       {hasValidSelection && (

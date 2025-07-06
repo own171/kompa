@@ -3,9 +3,8 @@ import React from 'react'
 export function CursorLine({ cursor, position, activityState = 'active' }) {
   if (!position || !cursor.color) return null
 
-  const stateClass = activityState === 'typing' 
-    ? 'active typing' 
-    : activityState
+  const stateClass =
+    activityState === 'typing' ? 'active typing' : activityState
 
   return (
     <div
