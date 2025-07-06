@@ -77,7 +77,7 @@ export class SyncManager extends EventEmitter {
         this.handleUserAwareness(peerId, message)
         break
       default:
-      // Unknown message type
+        // Unknown message type
     }
   }
 
@@ -187,5 +187,6 @@ export class SyncManager extends EventEmitter {
     this.isDestroyed = true
     this.syncedPeers.clear()
     this.removeAllListeners()
+
   }
 }

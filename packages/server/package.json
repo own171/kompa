@@ -1,0 +1,46 @@
+{
+  "name": "@kompa/server",
+  "version": "1.0.0",
+  "description": "Kompa server-as-peer collaboration server",
+  "type": "module",
+  "main": "src/server.js",
+  "bin": {
+    "kompa-server": "./bin/kompa-server.js"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "static/"
+  ],
+  "scripts": {
+    "start": "node bin/kompa-server.js",
+    "dev": "node src/server.js",
+    "build": "npm run build:static",
+    "build:static": "echo 'Building static web UI...' && cp -r ../../dist static/ || echo 'No dist found, will build during publish'"
+  },
+  "keywords": [
+    "collaboration",
+    "realtime",
+    "p2p",
+    "code-editor",
+    "crdt",
+    "websocket"
+  ],
+  "author": "Kompa Team",
+  "license": "MIT",
+  "dependencies": {
+    "yjs": "^13.6.8",
+    "ws": "^8.14.2",
+    "eventemitter3": "^5.0.1",
+    "commander": "^11.0.0",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/own171/kompa.git",
+    "directory": "packages/server"
+  }
+}

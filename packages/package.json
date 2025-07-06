@@ -1,0 +1,25 @@
+{
+  "name": "@kompa/workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kompa collaboration packages workspace",
+  "workspaces": [
+    "server",
+    "react", 
+    "core",
+    "cli"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "publish:all": "npm publish --workspaces --access public",
+    "clean": "rm -rf */dist */node_modules"
+  },
+  "devDependencies": {
+    "npm": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

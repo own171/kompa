@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Editor } from '@monaco-editor/react'
-import { useP2PRoom } from '../hooks/useP2PRoom'
+import { useKompaRoom } from '../hooks/useKompaRoom'
 import { UserCursors } from './cursors'
 import { ExportCode } from './ExportCode'
 import { debounce } from '../utils'
 import { CURSOR_UPDATE_DEBOUNCE } from '../constants'
 
-export function CodeEditor({ roomCode }) {
+export function CodeEditor({
+  roomCode,
+  userName = 'Anonymous',
+  serverUrl = 'ws://localhost:8080',
+}) {
   const editorRef = useRef(null)
   const [code, setCode] = useState('')
   const [language, setLanguage] = useState('javascript')
@@ -15,14 +19,17 @@ export function CodeEditor({ roomCode }) {
 
   // Create debounced cursor update function
   const debouncedCursorUpdate = useCallback(
-    debounce((position, selection) => {
-      sendOperation({
-        type: 'cursor-move',
-        position,
-        selection,
-      })
-    }, CURSOR_UPDATE_DEBOUNCE),
-    [] // Empty deps - debounced function should not change
+    (position, selection) => {
+      const debouncedFn = debounce(() => {
+        sendOperation({
+          type: 'cursor-move',
+          position,
+          selection,
+        })
+      }, CURSOR_UPDATE_DEBOUNCE)
+      debouncedFn()
+    },
+    [sendOperation]
   )
 
   const {
@@ -34,7 +41,7 @@ export function CodeEditor({ roomCode }) {
     sendOperation,
     getText,
     syncManager,
-  } = useP2PRoom(roomCode)
+  } = useKompaRoom(roomCode, { userName, serverUrl })
 
   // Handle editor mounting
   const handleEditorDidMount = (editor, _monaco) => {
@@ -226,12 +233,8 @@ export function CodeEditor({ roomCode }) {
             <option value="json">JSON</option>
             <option value="markdown">Markdown</option>
           </select>
-          
-          <ExportCode
-            code={code}
-            language={language}
-            roomCode={roomCode}
-          />
+
+          <ExportCode code={code} language={language} roomCode={roomCode} />
         </div>
 
         <div className="connection-info">

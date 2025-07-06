@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { WebSocketDiscovery } from '../p2p/websocket-discovery.js'
+import { ServerPeerDiscovery } from '../p2p/server-peer-discovery.js'
 import { CRDTManager } from '../collaboration/crdt.js'
 import { SyncManager } from '../collaboration/sync-browser.js'
 import { generatePeerColor } from '../utils'
 
-export function useP2PRoom(roomCode) {
+export function useKompaRoom(roomCode, options = {}) {
   const [isConnected, setIsConnected] = useState(false)
   const [peers, setPeers] = useState([])
   const [connectionState, setConnectionState] = useState('disconnected')
@@ -17,6 +17,8 @@ export function useP2PRoom(roomCode) {
   const [cursors, setCursors] = useState({})
   const [users, setUsers] = useState({})
 
+  const { serverUrl = 'ws://localhost:8080', userName = 'Anonymous' } = options
+
   useEffect(() => {
     if (!roomCode) return
 
@@ -28,17 +30,16 @@ export function useP2PRoom(roomCode) {
         setConnectionState('connecting')
         setError(null)
 
-        // Add small delay to ensure single initialization
         initTimeout = setTimeout(async () => {
           if (!mounted) return
 
           // Initialize CRDT manager
           crdtManager.current = new CRDTManager()
 
-          // Initialize WebSocket discovery
-          discovery.current = new WebSocketDiscovery()
+          // Initialize server-peer discovery
+          discovery.current = new ServerPeerDiscovery(serverUrl)
 
-          // Initialize sync manager (simplified for browser-based P2P)
+          // Initialize sync manager
           syncManager.current = new SyncManager(
             discovery.current,
             crdtManager.current
@@ -48,14 +49,13 @@ export function useP2PRoom(roomCode) {
           setupEventHandlers()
 
           // Join room
-          await discovery.current.joinRoom(roomCode)
+          await discovery.current.joinRoom(roomCode, userName)
 
           if (mounted) {
             setIsConnected(true)
           }
         }, 100)
       } catch (err) {
-        console.error('Failed to initialize room:', err)
         if (mounted) {
           setError(err.message)
           setConnectionState('failed')
@@ -64,52 +64,45 @@ export function useP2PRoom(roomCode) {
     }
 
     const setupEventHandlers = () => {
-      // Signaling server events
-      discovery.current.on('signalingConnected', () => {
+      // Server-peer events
+      discovery.current.on('serverConnected', () => {
         if (!mounted) return
-        console.log('🟢 Signaling server connected')
-        setConnectionState('connecting') // Still connecting to peers
+        setConnectionState('connecting')
       })
 
-      discovery.current.on('signalingDisconnected', () => {
+      discovery.current.on('serverDisconnected', () => {
         if (!mounted) return
-        console.log('🔴 Signaling server disconnected')
         setConnectionState('disconnected')
       })
 
-      discovery.current.on('signalingError', err => {
+      discovery.current.on('serverError', _err => {
         if (!mounted) return
-        console.error('❌ Signaling error:', err)
-        setError('Signaling server connection failed')
+        setError('Server peer connection failed')
         setConnectionState('failed')
       })
 
-      discovery.current.on('roomJoined', ({ roomCode: joinedRoom }) => {
+      discovery.current.on('roomJoined', ({ documentState }) => {
         if (!mounted) return
-        console.log(`🏠 Joined room: ${joinedRoom}`)
         setConnectionState('connected')
+
+        if (documentState && crdtManager.current) {
+          crdtManager.current.applyRemoteUpdate(documentState)
+        }
       })
 
-      // Discovery events
-      discovery.current.on('peerConnected', ({ peerId }) => {
+      discovery.current.on('peerConnected', () => {
         if (!mounted) return
-
-        console.log(`🤝 Peer connected: ${peerId.slice(0, 8)}`)
         updatePeerList()
       })
 
       discovery.current.on('peerDisconnected', ({ peerId }) => {
         if (!mounted) return
-
-        console.log(`👋 Peer disconnected: ${peerId.slice(0, 8)}`)
         updatePeerList()
         removePeerFromState(peerId)
       })
 
       discovery.current.on('peerMessage', ({ peerId, message }) => {
         if (!mounted) return
-
-        // Handle peer messages (collaboration data)
         syncManager.current?.handlePeerMessage?.(peerId, message)
       })
 
@@ -140,11 +133,8 @@ export function useP2PRoom(roomCode) {
         }))
       })
 
-      // Error handling
       discovery.current.on('error', err => {
         if (!mounted) return
-
-        console.error('Discovery error:', err)
         setError(err.message)
       })
     }
@@ -175,13 +165,11 @@ export function useP2PRoom(roomCode) {
     return () => {
       mounted = false
 
-      // Clear timeout if pending
       if (initTimeout) {
         clearTimeout(initTimeout)
         initTimeout = null
       }
 
-      // Clean up resources in proper order
       try {
         if (syncManager.current) {
           syncManager.current.destroy()
@@ -198,10 +186,10 @@ export function useP2PRoom(roomCode) {
           discovery.current = null
         }
       } catch (err) {
-        console.warn('Error during cleanup:', err)
+        // Cleanup errors are non-critical
       }
     }
-  }, [roomCode])
+  }, [roomCode, serverUrl, userName])
 
   const sendOperation = operation => {
     if (!syncManager.current) return
@@ -250,6 +238,7 @@ export function useP2PRoom(roomCode) {
       isConnected,
       connectionState,
       peers: peers.length,
+      serverUrl,
       sync: syncManager.current?.getStats() || {},
     }
   }
