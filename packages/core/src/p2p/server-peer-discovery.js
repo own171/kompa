@@ -23,8 +23,6 @@ export class ServerPeerDiscovery extends EventEmitter {
     this.serverPeerId = null
     this.peers = new Map() // Track other browser peers in room
 
-    console.log(`🐙 Server-Peer Discovery with peer ID: ${this.peerId.slice(0, 8)}`)
-    console.log(`🔗 Will connect to: ${serverUrl}`)
   }
 
   async joinRoom(roomCode, userName = 'Anonymous') {
@@ -43,11 +41,9 @@ export class ServerPeerDiscovery extends EventEmitter {
         userName
       }
       
-      console.log('📤 Sending join message to server peer:', joinMessage)
       this.sendToServerPeer(joinMessage)
       
     } catch (err) {
-      console.error('❌ Failed to join room via server peer:', err)
       this.emit('error', err)
     }
   }
@@ -55,7 +51,6 @@ export class ServerPeerDiscovery extends EventEmitter {
   async connectToServerPeer() {
     return new Promise((resolve, reject) => {
       try {
-        console.log(`🔌 Connecting to server peer at ${this.serverUrl}`)
         this.ws = new WebSocket(this.serverUrl)
 
         const timeout = setTimeout(() => {
@@ -66,15 +61,13 @@ export class ServerPeerDiscovery extends EventEmitter {
           clearTimeout(timeout)
           this.isConnected = true
           this.reconnectAttempts = 0
-          console.log('✅ Connected to server peer')
           this.emit('serverConnected')
           resolve()
         }
 
-        this.ws.onclose = (event) => {
+        this.ws.onclose = (_event) => {
           clearTimeout(timeout)
           this.isConnected = false
-          console.log('📴 Server peer connection closed:', event.code, event.reason)
           this.emit('serverDisconnected')
           this.handleServerDisconnect()
         }
@@ -82,7 +75,6 @@ export class ServerPeerDiscovery extends EventEmitter {
         this.ws.onerror = (err) => {
           clearTimeout(timeout)
           this.isConnected = false
-          console.error('❌ Server peer connection error:', err)
           this.emit('serverError', err)
           reject(err)
         }
@@ -91,8 +83,8 @@ export class ServerPeerDiscovery extends EventEmitter {
           try {
             const message = JSON.parse(event.data)
             this.handleServerMessage(message)
-          } catch (err) {
-            console.error('❌ Invalid message from server peer:', err)
+          } catch {
+            // Invalid message ignored
           }
         }
 
@@ -131,7 +123,7 @@ export class ServerPeerDiscovery extends EventEmitter {
         break
         
       default:
-        console.warn('⚠️ Unknown message type from server peer:', type)
+        // Unknown message type
     }
   }
 
@@ -158,8 +150,6 @@ export class ServerPeerDiscovery extends EventEmitter {
       isServerPeer: true
     })
 
-    console.log(`✅ Joined room ${roomCode} via server peer`)
-    console.log(`📋 ${existingPeers?.length || 0} existing peers in room`)
     
     // Emit room joined with initial document state
     this.emit('roomJoined', { 
@@ -185,7 +175,6 @@ export class ServerPeerDiscovery extends EventEmitter {
       isServerPeer: false
     })
     
-    console.log(`👋 New peer joined via server: ${userName} (${peerId.slice(0, 8)})`)
     
     // Emit as if this peer connected directly (compatibility)
     this.emit('peerConnected', { 
@@ -200,7 +189,6 @@ export class ServerPeerDiscovery extends EventEmitter {
     const peer = this.peers.get(peerId)
     
     if (peer) {
-      console.log(`👋 Peer left: ${peer.userName} (${peerId.slice(0, 8)})`)
       this.peers.delete(peerId)
       this.emit('peerDisconnected', { peerId })
     }
@@ -249,7 +237,6 @@ export class ServerPeerDiscovery extends EventEmitter {
       this.reconnectAttempts++
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000)
       
-      console.log(`🔄 Reconnecting to server peer in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`)
       
       this.reconnectTimeout = setTimeout(() => {
         if (this.roomCode && !this.isDestroyed) {
@@ -257,13 +244,12 @@ export class ServerPeerDiscovery extends EventEmitter {
             .then(() => {
               return this.joinRoom(this.roomCode, this.userName)
             })
-            .catch(err => {
-              console.error('❌ Reconnection failed:', err)
+            .catch(_err => {
+              // Reconnection errors ignored
             })
         }
       }, delay)
     } else {
-      console.error('❌ Max reconnection attempts reached')
       this.emit('error', new Error('Unable to reconnect to server peer'))
     }
   }
@@ -273,7 +259,6 @@ export class ServerPeerDiscovery extends EventEmitter {
       this.ws.send(JSON.stringify(message))
       return true
     } else {
-      console.warn('❌ Cannot send to server peer - not connected')
       return false
     }
   }
@@ -328,7 +313,6 @@ export class ServerPeerDiscovery extends EventEmitter {
   leaveRoom() {
     if (!this.roomCode) return
 
-    console.log(`👋 Leaving room ${this.roomCode}`)
 
     // Notify server peer
     this.sendToServerPeer({
@@ -346,7 +330,6 @@ export class ServerPeerDiscovery extends EventEmitter {
   destroy() {
     if (this.isDestroyed) return
 
-    console.log('🗑️ Destroying server peer discovery')
     
     this.isDestroyed = true
     this.isConnected = false

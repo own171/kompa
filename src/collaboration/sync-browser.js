@@ -43,8 +43,6 @@ export class SyncManager extends EventEmitter {
   handlePeerConnected(peerId) {
     if (this.isDestroyed) return
 
-    console.log(`Syncing with new peer ${peerId.slice(0, 8)}`)
-
     // Send current document state to new peer
     const syncMessage = this.crdtManager.syncWithPeer(peerId)
     if (syncMessage) {
@@ -79,12 +77,11 @@ export class SyncManager extends EventEmitter {
         this.handleUserAwareness(peerId, message)
         break
       default:
-        console.warn(`Unknown message type: ${message.type}`)
+        // Unknown message type
     }
   }
 
   handleSyncState(peerId, stateArray) {
-    console.log(`Received sync state from peer ${peerId.slice(0, 8)}`)
     this.crdtManager.handleSyncRequest(stateArray)
   }
 
@@ -191,6 +188,5 @@ export class SyncManager extends EventEmitter {
     this.syncedPeers.clear()
     this.removeAllListeners()
 
-    console.log('Sync manager destroyed')
   }
 }

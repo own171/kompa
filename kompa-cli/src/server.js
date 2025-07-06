@@ -42,9 +42,8 @@ export class KompaServer extends EventEmitter {
         }
       })
       
-      this.server.listen(this.port, this.host, (err) => {
-        if (err) reject(err)
-        else resolve()
+      this.server.listen(this.port, this.host, () => {
+        resolve()
       })
     })
   }
@@ -175,7 +174,7 @@ class KompaServerPeer extends EventEmitter {
 
   // Handle incoming WebSocket messages
   handleMessage(ws, message) {
-    const { type, roomCode, peerId, userName, update, targetPeer, data } = message
+    const { type, roomCode, peerId, userName, update } = message
 
     switch (type) {
       case 'join':
@@ -255,7 +254,8 @@ class KompaServerPeer extends EventEmitter {
       }, peerId)
 
       this.emit('documentUpdate', { roomCode, peerId, updateSize: updateArray.length })
-    } catch (err) {
+    } catch {
+      // Update errors ignored
     }
   }
 
@@ -312,7 +312,7 @@ class Room extends EventEmitter {
     this.ytext = this.ydoc.getText('code')
     
     // Track document changes
-    this.ytext.observe((event, transaction) => {
+    this.ytext.observe((_event, _transaction) => {
       this.lastActivity = Date.now()
       
     })
@@ -337,7 +337,7 @@ class Room extends EventEmitter {
   }
 
   // Server applies CRDT update to its document
-  applyUpdate(updateArray, fromPeerId) {
+  applyUpdate(updateArray, _fromPeerId) {
     const update = new Uint8Array(updateArray)
     Y.applyUpdate(this.ydoc, update, 'remote')
     this.lastActivity = Date.now()
@@ -365,7 +365,8 @@ class Room extends EventEmitter {
       if (peer.peerId !== excludePeerId && peer.ws.readyState === 1) {
         try {
           peer.ws.send(messageStr)
-        } catch (err) {
+        } catch {
+          // Send errors ignored
         }
       }
     }

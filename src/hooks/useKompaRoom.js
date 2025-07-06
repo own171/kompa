@@ -78,13 +78,13 @@ export function useKompaRoom(roomCode, options = {}) {
         setConnectionState('disconnected')
       })
 
-      discovery.current.on('serverError', err => {
+      discovery.current.on('serverError', _err => {
         if (!mounted) return
         setError('Server peer connection failed')
         setConnectionState('failed')
       })
 
-      discovery.current.on('roomJoined', ({ roomCode: joinedRoom, documentState }) => {
+      discovery.current.on('roomJoined', ({ documentState }) => {
         if (!mounted) return
         setConnectionState('connected')
         
@@ -93,7 +93,7 @@ export function useKompaRoom(roomCode, options = {}) {
         }
       })
 
-      discovery.current.on('peerConnected', ({ peerId, isServerPeer }) => {
+      discovery.current.on('peerConnected', () => {
         if (!mounted) return
         updatePeerList()
       })

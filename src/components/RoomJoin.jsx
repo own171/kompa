@@ -6,7 +6,7 @@ export function RoomJoin({ onJoin }) {
   const [isJoining, setIsJoining] = useState(false)
   const [userName, setUserName] = useState('')
   const [serverUrl, setServerUrl] = useState('ws://localhost:8080')
-  const [error, setError] = useState('')
+  const [, setError] = useState('')
 
   const handleSubmit = async e => {
     e.preventDefault()

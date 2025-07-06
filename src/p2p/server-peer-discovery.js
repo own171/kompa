@@ -65,7 +65,7 @@ export class ServerPeerDiscovery extends EventEmitter {
           resolve()
         }
 
-        this.ws.onclose = (event) => {
+        this.ws.onclose = (_event) => {
           clearTimeout(timeout)
           this.isConnected = false
           this.emit('serverDisconnected')
@@ -83,7 +83,8 @@ export class ServerPeerDiscovery extends EventEmitter {
           try {
             const message = JSON.parse(event.data)
             this.handleServerMessage(message)
-          } catch (err) {
+          } catch {
+            // Invalid message ignored
           }
         }
 
@@ -243,7 +244,8 @@ export class ServerPeerDiscovery extends EventEmitter {
             .then(() => {
               return this.joinRoom(this.roomCode, this.userName)
             })
-            .catch(err => {
+            .catch(_err => {
+              // Reconnection errors ignored
             })
         }
       }, delay)

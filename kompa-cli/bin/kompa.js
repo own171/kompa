@@ -138,11 +138,10 @@ async function startKompaServer(options) {
     console.log(chalk.blue('🚀 Starting Kompa server...'))
   }
 
-  let collaborationServer
   let webServer
 
   // Start collaboration server
-  collaborationServer = new KompaServer({
+  const collaborationServer = new KompaServer({
     port: parseInt(port),
     host: '0.0.0.0',
     quiet

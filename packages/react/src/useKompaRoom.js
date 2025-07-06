@@ -1,29 +1,23 @@
-/**
- * useKompaRoom - React hook for Kompa collaboration
- * Simplified version of the full useP2PRoom hook
- */
-
 import { useState, useEffect, useRef } from 'react'
-import { 
-  ServerPeerDiscovery, 
-  CRDTManager, 
-  SyncManager,
-  generatePeerColor 
-} from '@kompa/core'
+import { ServerPeerDiscovery } from '../p2p/server-peer-discovery.js'
+import { CRDTManager } from '../collaboration/crdt.js'
+import { SyncManager } from '../collaboration/sync-browser.js'
+import { generatePeerColor } from '../utils'
 
 export function useKompaRoom(roomCode, options = {}) {
   const [isConnected, setIsConnected] = useState(false)
   const [peers, setPeers] = useState([])
   const [connectionState, setConnectionState] = useState('disconnected')
   const [error, setError] = useState(null)
-  const [cursors, setCursors] = useState({})
 
   const discovery = useRef(null)
   const crdtManager = useRef(null)
   const syncManager = useRef(null)
 
+  const [cursors, setCursors] = useState({})
+  const [users, setUsers] = useState({})
+
   const {
-    mode = 'server-peer',
     serverUrl = 'ws://localhost:8080',
     userName = 'Anonymous'
   } = options
@@ -32,36 +26,39 @@ export function useKompaRoom(roomCode, options = {}) {
     if (!roomCode) return
 
     let mounted = true
+    let initTimeout = null
 
     const initializeRoom = async () => {
       try {
         setConnectionState('connecting')
         setError(null)
 
-        // Initialize CRDT manager
-        crdtManager.current = new CRDTManager()
+        initTimeout = setTimeout(async () => {
+          if (!mounted) return
 
-        // Initialize server-peer discovery
-        discovery.current = new ServerPeerDiscovery(serverUrl)
+          // Initialize CRDT manager
+          crdtManager.current = new CRDTManager()
 
-        // Initialize sync manager
-        syncManager.current = new SyncManager(
-          discovery.current,
-          crdtManager.current
-        )
+          // Initialize server-peer discovery
+          discovery.current = new ServerPeerDiscovery(serverUrl)
 
-        // Set up event handlers
-        setupEventHandlers()
+          // Initialize sync manager
+          syncManager.current = new SyncManager(
+            discovery.current,
+            crdtManager.current
+          )
 
-        // Join room
-        await discovery.current.joinRoom(roomCode, userName)
+          // Set up event handlers
+          setupEventHandlers()
 
-        if (mounted) {
-          setIsConnected(true)
-          setConnectionState('connected')
-        }
+          // Join room
+          await discovery.current.joinRoom(roomCode, userName)
+
+          if (mounted) {
+            setIsConnected(true)
+          }
+        }, 100)
       } catch (err) {
-        console.error('Failed to initialize Kompa room:', err)
         if (mounted) {
           setError(err.message)
           setConnectionState('failed')
@@ -70,7 +67,7 @@ export function useKompaRoom(roomCode, options = {}) {
     }
 
     const setupEventHandlers = () => {
-      // Server connection events
+      // Server-peer events
       discovery.current.on('serverConnected', () => {
         if (!mounted) return
         setConnectionState('connecting')
@@ -79,29 +76,24 @@ export function useKompaRoom(roomCode, options = {}) {
       discovery.current.on('serverDisconnected', () => {
         if (!mounted) return
         setConnectionState('disconnected')
-        setIsConnected(false)
       })
 
-      discovery.current.on('serverError', (err) => {
+      discovery.current.on('serverError', _err => {
         if (!mounted) return
-        setError('Server connection failed: ' + err.message)
+        setError('Server peer connection failed')
         setConnectionState('failed')
       })
 
-      // Room events
-      discovery.current.on('roomJoined', ({ roomCode: joinedRoom, documentState }) => {
+      discovery.current.on('roomJoined', ({ documentState }) => {
         if (!mounted) return
         setConnectionState('connected')
-        setIsConnected(true)
         
-        // Apply initial document state
         if (documentState && crdtManager.current) {
           crdtManager.current.applyRemoteUpdate(documentState)
         }
       })
 
-      // Peer events
-      discovery.current.on('peerConnected', ({ peerId, isServerPeer }) => {
+      discovery.current.on('peerConnected', () => {
         if (!mounted) return
         updatePeerList()
       })
@@ -109,42 +101,65 @@ export function useKompaRoom(roomCode, options = {}) {
       discovery.current.on('peerDisconnected', ({ peerId }) => {
         if (!mounted) return
         updatePeerList()
-        removePeerCursor(peerId)
+        removePeerFromState(peerId)
       })
 
-      // Collaboration events
-      syncManager.current.on('cursorUpdate', ({ peerId, position, selection }) => {
+      discovery.current.on('peerMessage', ({ peerId, message }) => {
         if (!mounted) return
-        
-        setCursors(prev => ({
+        syncManager.current?.handlePeerMessage?.(peerId, message)
+      })
+
+      // Sync events
+      syncManager.current.on(
+        'cursorUpdate',
+        ({ peerId, position, selection }) => {
+          if (!mounted) return
+
+          setCursors(prev => ({
+            ...prev,
+            [peerId]: {
+              position,
+              selection,
+              timestamp: Date.now(),
+              color: generatePeerColor(peerId),
+            },
+          }))
+        }
+      )
+
+      syncManager.current.on('userAwareness', ({ peerId, user }) => {
+        if (!mounted) return
+
+        setUsers(prev => ({
           ...prev,
-          [peerId]: {
-            position,
-            selection,
-            timestamp: Date.now(),
-            color: generatePeerColor(peerId)
-          }
+          [peerId]: user,
         }))
       })
 
-      syncManager.current.on('documentChange', ({ delta }) => {
+      discovery.current.on('error', err => {
         if (!mounted) return
-        // Document changed - this would trigger editor updates
+        setError(err.message)
       })
     }
 
     const updatePeerList = () => {
-      if (!mounted || !discovery.current) return
-      
-      const connectedPeers = discovery.current.getConnectedPeers() || []
+      if (!mounted) return
+
+      const connectedPeers = discovery.current?.getConnectedPeers() || []
       setPeers(connectedPeers)
     }
 
-    const removePeerCursor = (peerId) => {
+    const removePeerFromState = peerId => {
       setCursors(prev => {
         const newCursors = { ...prev }
         delete newCursors[peerId]
         return newCursors
+      })
+
+      setUsers(prev => {
+        const newUsers = { ...prev }
+        delete newUsers[peerId]
+        return newUsers
       })
     }
 
@@ -152,30 +167,34 @@ export function useKompaRoom(roomCode, options = {}) {
 
     return () => {
       mounted = false
-      
+
+      if (initTimeout) {
+        clearTimeout(initTimeout)
+        initTimeout = null
+      }
+
       try {
         if (syncManager.current) {
           syncManager.current.destroy()
           syncManager.current = null
         }
-        
+
         if (crdtManager.current) {
           crdtManager.current.destroy()
           crdtManager.current = null
         }
-        
+
         if (discovery.current) {
           discovery.current.destroy()
           discovery.current = null
         }
       } catch (err) {
-        console.warn('Error during Kompa cleanup:', err)
+        // Cleanup errors are non-critical
       }
     }
   }, [roomCode, serverUrl, userName])
 
-  // API methods
-  const sendOperation = (operation) => {
+  const sendOperation = operation => {
     if (!syncManager.current) return
 
     switch (operation.type) {
@@ -186,10 +205,20 @@ export function useKompaRoom(roomCode, options = {}) {
         syncManager.current.deleteText(operation.index, operation.length)
         break
       case 'text-replace':
-        syncManager.current.replaceText(operation.index, operation.length, operation.text)
+        syncManager.current.replaceText(
+          operation.index,
+          operation.length,
+          operation.text
+        )
         break
       case 'cursor-move':
-        syncManager.current.broadcastCursor(operation.position, operation.selection)
+        syncManager.current.broadcastCursor(
+          operation.position,
+          operation.selection
+        )
+        break
+      case 'user-awareness':
+        syncManager.current.broadcastUserAwareness(operation.user)
         break
     }
   }
@@ -198,18 +227,22 @@ export function useKompaRoom(roomCode, options = {}) {
     return syncManager.current?.getText() || ''
   }
 
-  const setText = (text) => {
+  const setText = text => {
     syncManager.current?.setText(text)
+  }
+
+  const applyMonacoDelta = delta => {
+    syncManager.current?.applyMonacoDelta(delta)
   }
 
   const getStats = () => {
     return {
       room: roomCode,
-      mode,
       isConnected,
       connectionState,
       peers: peers.length,
-      serverUrl
+      serverUrl,
+      sync: syncManager.current?.getStats() || {},
     }
   }
 
@@ -219,10 +252,12 @@ export function useKompaRoom(roomCode, options = {}) {
     connectionState,
     error,
     cursors,
+    users,
     sendOperation,
     getText,
     setText,
+    applyMonacoDelta,
     getStats,
-    syncManager: syncManager.current
+    syncManager: syncManager.current,
   }
 }

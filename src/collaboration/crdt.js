@@ -188,6 +188,5 @@ export class CRDTManager extends EventEmitter {
     this.ydoc.destroy()
     this.removeAllListeners()
 
-    console.log('CRDT manager destroyed')
   }
 }
