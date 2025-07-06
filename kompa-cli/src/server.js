@@ -34,6 +34,14 @@ export class KompaServer extends EventEmitter {
     this.setupWebSocket()
     
     return new Promise((resolve, reject) => {
+      this.server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          reject(new Error(`Port ${this.port} is already in use. Try a different port with -p option.`))
+        } else {
+          reject(err)
+        }
+      })
+      
       this.server.listen(this.port, this.host, (err) => {
         if (err) reject(err)
         else resolve()

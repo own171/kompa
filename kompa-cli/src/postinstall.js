@@ -10,7 +10,8 @@ console.log(`
 Kompa is now globally installed and ready to use.
 
 Quick start:
-  kompa           # Interactive mode
+  kompa           # Interactive mode (short alias)
+  kompa-server    # Interactive mode (full name)  
   kompa quick     # Start with defaults
   kompa dev       # Development mode
 

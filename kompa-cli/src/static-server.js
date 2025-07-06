@@ -66,8 +66,15 @@ export class StaticServer {
 
     return new Promise((resolve, reject) => {
       this.server = this.app.listen(this.port, this.host, (err) => {
-        if (err) reject(err)
-        else resolve()
+        if (err) {
+          if (err.code === 'EADDRINUSE') {
+            reject(new Error(`Web UI port ${this.port} is already in use. Try a different port with -w option.`))
+          } else {
+            reject(err)
+          }
+        } else {
+          resolve()
+        }
       })
     })
   }

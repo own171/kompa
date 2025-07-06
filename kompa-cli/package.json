@@ -1,9 +1,10 @@
 {
-  "name": "kompa",
+  "name": "kompa-server",
   "version": "1.0.0",
   "description": "Global CLI for instant Kompa collaboration server deployment",
   "type": "module",
   "bin": {
+    "kompa-server": "./bin/kompa.js",
     "kompa": "./bin/kompa.js"
   },
   "files": [
