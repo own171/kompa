@@ -23,6 +23,7 @@ const packageJson = JSON.parse(
   )
 )
 
+/* eslint-disable no-console */
 console.log(chalk.blue(`
 🐙 Kompa v${packageJson.version}
 The collaboration server that works everywhere!

@@ -25,7 +25,6 @@ export function KompaEditor({
     connectionState, 
     error,
     peers,
-    sendOperation,
     getText,
     syncManager 
   } = useKompaRoom(roomCode, {
@@ -43,7 +42,7 @@ export function KompaEditor({
       }
 
       // Listen for remote changes
-      const handleRemoteChange = ({ delta }) => {
+      const handleRemoteChange = () => {
         // Apply remote changes to editor
         // This would need Monaco integration
       }

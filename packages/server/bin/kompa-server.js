@@ -20,6 +20,8 @@ const packageJson = JSON.parse(
   )
 )
 
+/* eslint-disable no-console */
+
 program
   .name('kompa-server')
   .description('Start a Kompa collaboration server')
