@@ -27,11 +27,9 @@ export class KompaServer extends EventEmitter {
 
   async start() {
     this.server = createServer()
-    this.wss = new WebSocketServer({ server: this.server })
     this.peer = new KompaServerPeer(this.maxRooms, this.roomTimeout, this.quiet)
     
     this.setupRoutes()
-    this.setupWebSocket()
     
     return new Promise((resolve, reject) => {
       this.server.on('error', (err) => {
@@ -43,7 +41,14 @@ export class KompaServer extends EventEmitter {
       })
       
       this.server.listen(this.port, this.host, () => {
-        resolve()
+        // Only create WebSocket server after HTTP server is successfully listening
+        try {
+          this.wss = new WebSocketServer({ server: this.server })
+          this.setupWebSocket()
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
       })
     })
   }
