@@ -247,17 +247,8 @@ REACT_APP_DEBUG=true npm start
 ### Coming Soon™
 
 - [ ] **File Tree Support** - Edit multiple files together
-- [ ] **Voice & Video Chat** - Because sometimes you need to talk
-- [ ] **User Avatars** - See who's who at a glance
 - [ ] **Room Persistence** - Optional save/restore for important sessions
-- [ ] **Mobile App** - Code on your phone? Why not!
 
-### Dream Features
-
-- [ ] **Plugin System** - Extend Kompa with custom features
-- [ ] **Git Integration** - Collaborative commits and branches
-- [ ] **AI Pair Programming** - Code with AI and humans together
-- [ ] **VR/AR Mode** - Code in virtual space (because we can!)
 
 ## 📜 License
 
@@ -267,22 +258,16 @@ Released under the [MIT License](LICENSE). Go wild! 🎉
 
 Huge thanks to the amazing open source projects that make Kompa possible:
 
-- [Y.js](https://docs.yjs.dev/) - The CRDT magic that makes collaboration work
-- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - VS Code in the browser
-- [Simple-Peer](https://github.com/feross/simple-peer) - WebRTC made simple
-- [React](https://reactjs.org/) - The UI library we all love
-
-## 🎪 Community
-
-- **GitHub Issues**: Found a bug? Have an idea? [Tell us!](https://github.com/own171/kompa/issues)
-- **Discussions**: Chat with the community in [GitHub Discussions](https://github.com/own171/kompa/discussions)
-- **Twitter**: Follow [@KompaEditor](https://twitter.com/KompaEditor) for updates
-
+- [Y.js](https://docs.yjs.dev/)
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+- [Simple-Peer](https://github.com/feross/simple-peer) 
+- [React](https://reactjs.org/)
+  
 ---
 
 <div align="center">
   
-  **Built with ❤️ by developers who believe coding should be social**
+  **Built with ❤️**
   
   *Star ⭐ this repo if Kompa makes your coding life better!*
   
