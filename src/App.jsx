@@ -37,7 +37,7 @@ function App() {
           </div>
         )}
       </header>
-      
+
       <main className="app-main">
         {!isInRoom ? (
           <ErrorBoundary>
@@ -45,7 +45,7 @@ function App() {
           </ErrorBoundary>
         ) : (
           <ErrorBoundary>
-            <CodeEditor 
+            <CodeEditor
               roomCode={roomCode}
               userName={userName}
               serverUrl={serverUrl}

@@ -12,19 +12,21 @@ export function UserCursors({ cursors, users, editor }) {
 
     const updateCursors = () => {
       try {
-        const elements = Object.entries(cursors).map(([peerId, cursor]) => {
-          const user = users[peerId] || { name: peerId.slice(0, 8) }
-          
-          if (!cursor.position) return null
+        const elements = Object.entries(cursors)
+          .map(([peerId, cursor]) => {
+            const user = users[peerId] || { name: peerId.slice(0, 8) }
 
-          return {
-            id: peerId,
-            position: cursor.position,
-            color: cursor.color,
-            name: user.name,
-            selection: cursor.selection
-          }
-        }).filter(Boolean)
+            if (!cursor.position) return null
+
+            return {
+              id: peerId,
+              position: cursor.position,
+              color: cursor.color,
+              name: user.name,
+              selection: cursor.selection,
+            }
+          })
+          .filter(Boolean)
 
         setCursorElements(elements)
       } catch (err) {
@@ -40,7 +42,7 @@ export function UserCursors({ cursors, users, editor }) {
     const disposables = [
       editor.onDidChangeModelContent(updateCursors),
       editor.onDidScrollChange(updateCursors),
-      editor.onDidLayoutChange(updateCursors)
+      editor.onDidLayoutChange(updateCursors),
     ]
 
     return () => {
@@ -59,11 +61,7 @@ export function UserCursors({ cursors, users, editor }) {
   return (
     <div className="user-cursors">
       {cursorElements.map(cursor => (
-        <CursorDisplay
-          key={cursor.id}
-          cursor={cursor}
-          editor={editor}
-        />
+        <CursorDisplay key={cursor.id} cursor={cursor} editor={editor} />
       ))}
     </div>
   )

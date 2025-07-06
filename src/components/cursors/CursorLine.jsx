@@ -14,7 +14,7 @@ export function CursorLine({ cursor, position }) {
         height: '18px',
         backgroundColor: cursor.color,
         zIndex: 1000,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
     />
   )

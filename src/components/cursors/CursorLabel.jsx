@@ -19,7 +19,7 @@ export function CursorLabel({ cursor, position }) {
         whiteSpace: 'nowrap',
         zIndex: 1001,
         pointerEvents: 'none',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
       }}
     >
       {cursor.name}
