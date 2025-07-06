@@ -98,7 +98,7 @@ export class KompaServer extends EventEmitter {
         this.peer.handleLeave(ws)
       })
 
-      ws.on('error', (err) => {
+      ws.on('error', (_err) => {
         this.peer.handleLeave(ws)
       })
     })

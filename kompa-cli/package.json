@@ -1,6 +1,6 @@
 {
   "name": "kompa-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Global CLI for instant Kompa collaboration server deployment",
   "type": "module",
   "bin": {
@@ -17,7 +17,7 @@
   },
   "keywords": [
     "collaboration",
-    "realtime", 
+    "realtime",
     "p2p",
     "code-editor",
     "cli",

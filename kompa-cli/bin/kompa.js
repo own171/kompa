@@ -148,10 +148,15 @@ async function startKompaServer(options) {
     quiet
   })
   
-  await collaborationServer.start()
-  
-  if (!quiet) {
-    console.log(chalk.green(`✅ Collaboration server running on ws://localhost:${port}`))
+  try {
+    await collaborationServer.start()
+    
+    if (!quiet) {
+      console.log(chalk.green(`✅ Collaboration server running on ws://localhost:${port}`))
+    }
+  } catch (err) {
+    console.error(chalk.red(`❌ ${err.message}`))
+    process.exit(1)
   }
 
   // Start web UI server
@@ -168,7 +173,12 @@ async function startKompaServer(options) {
       quiet
     })
     
-    await webServer.start()
+    try {
+      await webServer.start()
+    } catch (err) {
+      console.error(chalk.red(`❌ ${err.message}`))
+      process.exit(1)
+    }
     
     const webUrl = `http://localhost:${webPort}`
     
