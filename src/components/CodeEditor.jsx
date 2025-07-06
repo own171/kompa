@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Editor } from '@monaco-editor/react'
-import { useP2PRoom } from '../hooks/useP2PRoom'
+import { useKompaRoom } from '../hooks/useKompaRoom'
 import { UserCursors } from './cursors'
 import { ExportCode } from './ExportCode'
 import { debounce } from '../utils'
 import { CURSOR_UPDATE_DEBOUNCE } from '../constants'
 
-export function CodeEditor({ roomCode }) {
+export function CodeEditor({ roomCode, userName = 'Anonymous', serverUrl = 'ws://localhost:8080' }) {
   const editorRef = useRef(null)
   const [code, setCode] = useState('')
   const [language, setLanguage] = useState('javascript')
@@ -34,7 +34,7 @@ export function CodeEditor({ roomCode }) {
     sendOperation,
     getText,
     syncManager,
-  } = useP2PRoom(roomCode)
+  } = useKompaRoom(roomCode, { userName, serverUrl })
 
   // Handle editor mounting
   const handleEditorDidMount = (editor, _monaco) => {

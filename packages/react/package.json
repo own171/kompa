@@ -1,0 +1,47 @@
+{
+  "name": "@kompa/react",
+  "version": "1.0.0",
+  "description": "React components for Kompa collaboration",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "react",
+    "collaboration",
+    "realtime",
+    "code-editor",
+    "crdt"
+  ],
+  "author": "Kompa Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "@kompa/core": "^1.0.0",
+    "@monaco-editor/react": "^4.6.0",
+    "eventemitter3": "^5.0.1",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "rollup": "^3.0.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/own171/kompa.git",
+    "directory": "packages/react"
+  }
+}

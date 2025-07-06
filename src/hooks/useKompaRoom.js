@@ -1,16 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
-import { WebSocketDiscovery } from '../p2p/websocket-discovery.js'
 import { ServerPeerDiscovery } from '../p2p/server-peer-discovery.js'
 import { CRDTManager } from '../collaboration/crdt.js'
 import { SyncManager } from '../collaboration/sync-browser.js'
 import { generatePeerColor } from '../utils'
 
-export function useP2PRoom(roomCode, options = {}) {
+export function useKompaRoom(roomCode, options = {}) {
   const [isConnected, setIsConnected] = useState(false)
   const [peers, setPeers] = useState([])
   const [connectionState, setConnectionState] = useState('disconnected')
   const [error, setError] = useState(null)
-  const [mode, setMode] = useState(options.mode || 'webrtc') // 'webrtc' | 'server-peer' | 'hybrid'
 
   const discovery = useRef(null)
   const crdtManager = useRef(null)
@@ -18,6 +16,11 @@ export function useP2PRoom(roomCode, options = {}) {
 
   const [cursors, setCursors] = useState({})
   const [users, setUsers] = useState({})
+
+  const {
+    serverUrl = 'ws://localhost:8080',
+    userName = 'Anonymous'
+  } = options
 
   useEffect(() => {
     if (!roomCode) return
@@ -30,35 +33,14 @@ export function useP2PRoom(roomCode, options = {}) {
         setConnectionState('connecting')
         setError(null)
 
-        // Add small delay to ensure single initialization
         initTimeout = setTimeout(async () => {
           if (!mounted) return
 
           // Initialize CRDT manager
           crdtManager.current = new CRDTManager()
 
-          // Initialize discovery based on mode
-          if (mode === 'server-peer') {
-            const serverUrl = options.serverUrl || 'ws://localhost:8080'
-            discovery.current = new ServerPeerDiscovery(serverUrl)
-            console.log(`🐙 Using server-peer mode: ${serverUrl}`)
-          } else if (mode === 'hybrid') {
-            // Try server-peer first, fallback to WebRTC
-            try {
-              const serverUrl = options.serverUrl || 'ws://localhost:8080'
-              discovery.current = new ServerPeerDiscovery(serverUrl)
-              console.log(`🐙 Trying server-peer mode first: ${serverUrl}`)
-              setMode('server-peer')
-            } catch (err) {
-              console.log('🔄 Server-peer failed, falling back to WebRTC')
-              discovery.current = new WebSocketDiscovery()
-              setMode('webrtc')
-            }
-          } else {
-            // Default WebRTC mode
-            discovery.current = new WebSocketDiscovery()
-            console.log('🌐 Using WebRTC mode')
-          }
+          // Initialize server-peer discovery
+          discovery.current = new ServerPeerDiscovery(serverUrl)
 
           // Initialize sync manager
           syncManager.current = new SyncManager(
@@ -69,20 +51,14 @@ export function useP2PRoom(roomCode, options = {}) {
           // Set up event handlers
           setupEventHandlers()
 
-          // Join room with user name for server-peer mode
-          const userName = options.userName || 'Anonymous'
-          if (mode === 'server-peer') {
-            await discovery.current.joinRoom(roomCode, userName)
-          } else {
-            await discovery.current.joinRoom(roomCode)
-          }
+          // Join room
+          await discovery.current.joinRoom(roomCode, userName)
 
           if (mounted) {
             setIsConnected(true)
           }
         }, 100)
       } catch (err) {
-        console.error('Failed to initialize room:', err)
         if (mounted) {
           setError(err.message)
           setConnectionState('failed')
@@ -91,85 +67,45 @@ export function useP2PRoom(roomCode, options = {}) {
     }
 
     const setupEventHandlers = () => {
-      // Handle events based on connection mode
-      if (mode === 'server-peer') {
-        // Server-peer specific events
-        discovery.current.on('serverConnected', () => {
-          if (!mounted) return
-          console.log('🟢 Server peer connected')
-          setConnectionState('connecting')
-        })
+      // Server-peer events
+      discovery.current.on('serverConnected', () => {
+        if (!mounted) return
+        setConnectionState('connecting')
+      })
 
-        discovery.current.on('serverDisconnected', () => {
-          if (!mounted) return
-          console.log('🔴 Server peer disconnected')
-          setConnectionState('disconnected')
-        })
+      discovery.current.on('serverDisconnected', () => {
+        if (!mounted) return
+        setConnectionState('disconnected')
+      })
 
-        discovery.current.on('serverError', err => {
-          if (!mounted) return
-          console.error('❌ Server peer error:', err)
-          setError('Server peer connection failed')
-          setConnectionState('failed')
-        })
-      } else {
-        // WebRTC mode events
-        discovery.current.on('signalingConnected', () => {
-          if (!mounted) return
-          console.log('🟢 Signaling server connected')
-          setConnectionState('connecting')
-        })
-
-        discovery.current.on('signalingDisconnected', () => {
-          if (!mounted) return
-          console.log('🔴 Signaling server disconnected')
-          setConnectionState('disconnected')
-        })
-
-        discovery.current.on('signalingError', err => {
-          if (!mounted) return
-          console.error('❌ Signaling error:', err)
-          setError('Signaling server connection failed')
-          setConnectionState('failed')
-        })
-      }
+      discovery.current.on('serverError', err => {
+        if (!mounted) return
+        setError('Server peer connection failed')
+        setConnectionState('failed')
+      })
 
       discovery.current.on('roomJoined', ({ roomCode: joinedRoom, documentState }) => {
         if (!mounted) return
-        console.log(`🏠 Joined room: ${joinedRoom}`)
         setConnectionState('connected')
         
-        // For server-peer mode, apply initial document state
-        if (mode === 'server-peer' && documentState && crdtManager.current) {
-          console.log('📄 Applying initial document state from server')
+        if (documentState && crdtManager.current) {
           crdtManager.current.applyRemoteUpdate(documentState)
         }
       })
 
-      // Discovery events
       discovery.current.on('peerConnected', ({ peerId, isServerPeer }) => {
         if (!mounted) return
-
-        if (isServerPeer) {
-          console.log(`🐙 Server peer connected: ${peerId.slice(0, 8)}`)
-        } else {
-          console.log(`🤝 Peer connected: ${peerId.slice(0, 8)}`)
-        }
         updatePeerList()
       })
 
       discovery.current.on('peerDisconnected', ({ peerId }) => {
         if (!mounted) return
-
-        console.log(`👋 Peer disconnected: ${peerId.slice(0, 8)}`)
         updatePeerList()
         removePeerFromState(peerId)
       })
 
       discovery.current.on('peerMessage', ({ peerId, message }) => {
         if (!mounted) return
-
-        // Handle peer messages (collaboration data)
         syncManager.current?.handlePeerMessage?.(peerId, message)
       })
 
@@ -200,11 +136,8 @@ export function useP2PRoom(roomCode, options = {}) {
         }))
       })
 
-      // Error handling
       discovery.current.on('error', err => {
         if (!mounted) return
-
-        console.error('Discovery error:', err)
         setError(err.message)
       })
     }
@@ -235,13 +168,11 @@ export function useP2PRoom(roomCode, options = {}) {
     return () => {
       mounted = false
 
-      // Clear timeout if pending
       if (initTimeout) {
         clearTimeout(initTimeout)
         initTimeout = null
       }
 
-      // Clean up resources in proper order
       try {
         if (syncManager.current) {
           syncManager.current.destroy()
@@ -258,10 +189,10 @@ export function useP2PRoom(roomCode, options = {}) {
           discovery.current = null
         }
       } catch (err) {
-        console.warn('Error during cleanup:', err)
+        // Cleanup errors are non-critical
       }
     }
-  }, [roomCode])
+  }, [roomCode, serverUrl, userName])
 
   const sendOperation = operation => {
     if (!syncManager.current) return
@@ -307,10 +238,10 @@ export function useP2PRoom(roomCode, options = {}) {
   const getStats = () => {
     return {
       room: roomCode,
-      mode,
       isConnected,
       connectionState,
       peers: peers.length,
+      serverUrl,
       sync: syncManager.current?.getStats() || {},
     }
   }
@@ -320,7 +251,6 @@ export function useP2PRoom(roomCode, options = {}) {
     peers,
     connectionState,
     error,
-    mode,
     cursors,
     users,
     sendOperation,

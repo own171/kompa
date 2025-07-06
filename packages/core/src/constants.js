@@ -1,7 +1,12 @@
 // Application constants
+export const WS_RECONNECT_DELAY = 3000
 export const CURSOR_UPDATE_DEBOUNCE = 100
 export const MAX_ROOM_CODE_LENGTH = 50
 export const REMOTE_UPDATE_DEBOUNCE = 50
+export const PEER_CONNECTION_TIMEOUT = 30000
+
+// WebSocket and signaling
+export const SIGNALING_URL = process.env.REACT_APP_SIGNALING_URL || 'ws://localhost:8080'
 
 // UI constants
 export const CURSOR_LINE_HEIGHT = 18
@@ -18,6 +23,12 @@ export const ROOM_CODE_ADJECTIVES = [
 
 export const ROOM_CODE_NOUNS = [
   'fox', 'wolf', 'bear', 'eagle', 'tiger', 'shark', 'lion', 'hawk', 'deer', 'owl'
+]
+
+// WebRTC configuration
+export const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' }
 ]
 
 // Debug mode
