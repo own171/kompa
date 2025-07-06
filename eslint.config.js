@@ -7,7 +7,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
-    ignores: ['dist/**', 'build/**', 'node_modules/**'],
+    ignores: ['dist/**', 'build/**', 'node_modules/**', '**/dist/**', '**/build/**', 'kompa-cli/static/**', 'packages/**/dist/**'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {

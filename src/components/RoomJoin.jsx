@@ -18,7 +18,7 @@ export function RoomJoin({ onJoin }) {
     try {
       await onJoin(sanitized, {
         userName: userName.trim() || 'Anonymous',
-        serverUrl: serverUrl.trim() || 'ws://localhost:8080'
+        serverUrl: serverUrl.trim() || 'ws://localhost:8080',
       })
     } catch (err) {
       setError('Failed to join room')
@@ -93,10 +93,19 @@ export function RoomJoin({ onJoin }) {
       <div className="room-info">
         <h3>🐙 Server-Peer Collaboration</h3>
         <ul>
-          <li><strong>Universal compatibility:</strong> Works on any network via WebSocket</li>
-          <li><strong>No setup required:</strong> Just connect to any Kompa server</li>
-          <li><strong>Real-time sync:</strong> Conflict-free collaborative editing</li>
-          <li><strong>Ephemeral rooms:</strong> Disappear when everyone leaves</li>
+          <li>
+            <strong>Universal compatibility:</strong> Works on any network via
+            WebSocket
+          </li>
+          <li>
+            <strong>No setup required:</strong> Just connect to any Kompa server
+          </li>
+          <li>
+            <strong>Real-time sync:</strong> Conflict-free collaborative editing
+          </li>
+          <li>
+            <strong>Ephemeral rooms:</strong> Disappear when everyone leaves
+          </li>
         </ul>
         <h3>How to use:</h3>
         <ul>

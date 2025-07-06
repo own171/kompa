@@ -17,10 +17,7 @@ export function useKompaRoom(roomCode, options = {}) {
   const [cursors, setCursors] = useState({})
   const [users, setUsers] = useState({})
 
-  const {
-    serverUrl = 'ws://localhost:8080',
-    userName = 'Anonymous'
-  } = options
+  const { serverUrl = 'ws://localhost:8080', userName = 'Anonymous' } = options
 
   useEffect(() => {
     if (!roomCode) return
@@ -87,7 +84,7 @@ export function useKompaRoom(roomCode, options = {}) {
       discovery.current.on('roomJoined', ({ documentState }) => {
         if (!mounted) return
         setConnectionState('connected')
-        
+
         if (documentState && crdtManager.current) {
           crdtManager.current.applyRemoteUpdate(documentState)
         }

@@ -6,7 +6,11 @@ import { ExportCode } from './ExportCode'
 import { debounce } from '../utils'
 import { CURSOR_UPDATE_DEBOUNCE } from '../constants'
 
-export function CodeEditor({ roomCode, userName = 'Anonymous', serverUrl = 'ws://localhost:8080' }) {
+export function CodeEditor({
+  roomCode,
+  userName = 'Anonymous',
+  serverUrl = 'ws://localhost:8080',
+}) {
   const editorRef = useRef(null)
   const [code, setCode] = useState('')
   const [language, setLanguage] = useState('javascript')
@@ -229,12 +233,8 @@ export function CodeEditor({ roomCode, userName = 'Anonymous', serverUrl = 'ws:/
             <option value="json">JSON</option>
             <option value="markdown">Markdown</option>
           </select>
-          
-          <ExportCode
-            code={code}
-            language={language}
-            roomCode={roomCode}
-          />
+
+          <ExportCode code={code} language={language} roomCode={roomCode} />
         </div>
 
         <div className="connection-info">
