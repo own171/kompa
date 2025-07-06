@@ -1,25 +1,15 @@
 import React from 'react'
 
-export function CursorLabel({ cursor, position }) {
+export function CursorLabel({ cursor, position, activityState = 'active' }) {
   if (!position || !cursor.name) return null
 
   return (
     <div
-      className="cursor-label"
+      className={`cursor-label ${activityState}`}
       style={{
-        position: 'absolute',
+        '--cursor-color': cursor.color,
         left: position.x + 4,
-        top: position.y - 20,
-        backgroundColor: cursor.color,
-        color: '#ffffff',
-        padding: '2px 6px',
-        borderRadius: '3px',
-        fontSize: '11px',
-        fontWeight: '500',
-        whiteSpace: 'nowrap',
-        zIndex: 1001,
-        pointerEvents: 'none',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        top: position.y,
       }}
     >
       {cursor.name}

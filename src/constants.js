@@ -1,5 +1,5 @@
 // Application constants
-export const CURSOR_UPDATE_DEBOUNCE = 100
+export const CURSOR_UPDATE_DEBOUNCE = 50
 export const MAX_ROOM_CODE_LENGTH = 50
 export const REMOTE_UPDATE_DEBOUNCE = 50
 
