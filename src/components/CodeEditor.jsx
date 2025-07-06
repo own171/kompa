@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { Editor } from '@monaco-editor/react'
 import { useP2PRoom } from '../hooks/useP2PRoom'
 import { UserCursors } from './cursors'
+import { ExportCode } from './ExportCode'
 import { debounce } from '../utils'
 import { CURSOR_UPDATE_DEBOUNCE } from '../constants'
 
@@ -225,6 +226,12 @@ export function CodeEditor({ roomCode }) {
             <option value="json">JSON</option>
             <option value="markdown">Markdown</option>
           </select>
+          
+          <ExportCode
+            code={code}
+            language={language}
+            roomCode={roomCode}
+          />
         </div>
 
         <div className="connection-info">

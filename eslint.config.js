@@ -7,6 +7,7 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
+    ignores: ['dist/**', 'build/**', 'node_modules/**'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
@@ -20,7 +21,12 @@ export default [
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
-        clearInterval: 'readonly'
+        clearInterval: 'readonly',
+        alert: 'readonly',
+        Blob: 'readonly',
+        URL: 'readonly',
+        navigator: 'readonly',
+        sessionStorage: 'readonly'
       },
       parserOptions: {
         ecmaVersion: 'latest',

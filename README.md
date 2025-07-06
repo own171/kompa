@@ -249,7 +249,6 @@ REACT_APP_DEBUG=true npm start
 - [ ] **File Tree Support** - Edit multiple files together
 - [ ] **Room Persistence** - Optional save/restore for important sessions
 
-
 ## 📜 License
 
 Released under the [MIT License](LICENSE). Go wild! 🎉
@@ -260,9 +259,8 @@ Huge thanks to the amazing open source projects that make Kompa possible:
 
 - [Y.js](https://docs.yjs.dev/)
 - [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-- [Simple-Peer](https://github.com/feross/simple-peer) 
+- [Simple-Peer](https://github.com/feross/simple-peer)
 - [React](https://reactjs.org/)
-  
 ---
 
 <div align="center">
